@@ -14,7 +14,27 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        externalNativeBuild {
+            cmake {
+                arguments "-fuse-ld=lld" // This is to fix lld problem (armv8)
+                arguments "-DANDROID_STL=c++_shared"
+            }
+        }
+
+        ndk {
+            moduleName "ncnn"
+            abiFilters "armeabi-v7a", "arm64-v8a"
+        }
     }
+
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+            version "3.18.1"
+        }
+    }
+    ndkVersion '22.1.7171670'
+
 
     buildTypes {
         release {

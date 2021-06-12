@@ -13,3 +13,7 @@
 .externalNativeBuild
 .cxx
 local.properties
+/app/src/main/cpp/ncnn*
+/app/src/main/cpp/opencv*
+*.bin
+*.param

@@ -92,7 +92,7 @@ public class CameraBackgroundActivity extends LandscapeDaggerAppCompatActivity {
         @SuppressLint("RestrictedApi") ImageAnalysis imageAnalysis =
                 new ImageAnalysis.Builder()
                         .setTargetAspectRatio(AspectRatio.RATIO_16_9)
-                        .setDefaultResolution(new Size(1280, 720))
+                        .setDefaultResolution(new Size(1920, 1080))
                         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                         .build();
         imageAnalysis.setAnalyzer(executor, image -> {
@@ -108,7 +108,7 @@ public class CameraBackgroundActivity extends LandscapeDaggerAppCompatActivity {
         // Convert Image to ByteArray
         @SuppressLint("UnsafeOptInUsageError")
         Bitmap bitmap = ImageHelper.ConvertImageToBitmap(Objects.requireNonNull(image.getImage()));
-        runOnUiThread(() -> imageViewMutableLiveData.getValue().setImageBitmap(bitmap));
+        runOnUiThread(() -> imageViewMutableLiveData.getValue().setImageBitmap(NativeCall.Run(bitmap, threshold, nms_threshold)));
 
         image.close();
     }
