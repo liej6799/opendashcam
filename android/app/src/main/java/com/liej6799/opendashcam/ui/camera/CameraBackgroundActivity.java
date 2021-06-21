@@ -4,8 +4,11 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.util.Size;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
@@ -33,85 +36,37 @@ import java.util.concurrent.Executors;
 
 import javax.inject.Inject;
 
-public class CameraBackgroundActivity extends LandscapeDaggerAppCompatActivity {
+public class CameraBackgroundActivity extends LandscapeDaggerAppCompatActivity implements SurfaceHolder.Callback {
     public static double threshold = 0.3, nms_threshold = 0.7;
-    public MutableLiveData<PreviewView> previewViewMutableLiveData = new MutableLiveData<>();
-    public MutableLiveData<ImageView> imageViewMutableLiveData = new MutableLiveData<>();
+    public MutableLiveData<SurfaceView> surfaceViewMutableLiveData = new MutableLiveData<>();
 
 
     private static final int REQUEST_CODE_PERMISSIONS = 10;
     private static final String[] REQUIRED_PERMISSIONS = { Manifest.permission.CAMERA };
 
-    private ListenableFuture<ProcessCameraProvider> mCameraProviderFuture;
-    private ExecutorService executor = Executors.newSingleThreadExecutor();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     public void startCamera() {
-        if (imageViewMutableLiveData.getValue() != null && previewViewMutableLiveData.getValue() != null)
+        if (surfaceViewMutableLiveData.getValue() != null)
         {
-            imageViewMutableLiveData.getValue().post(() -> {
-                mCameraProviderFuture = ProcessCameraProvider.getInstance(this);
-                mCameraProviderFuture.addListener(() -> {
-                    try {
-                        ProcessCameraProvider cameraProvider = mCameraProviderFuture.get();
-                        bindPreview(cameraProvider);
-                    } catch (ExecutionException | InterruptedException e) {
-                        // No errors need to be handled for this Future.
-                        // This should never be reached.
-                    }
-                }, ContextCompat.getMainExecutor(this));
+            surfaceViewMutableLiveData.getValue().post(() -> {
+                surfaceViewMutableLiveData.getValue().getHolder().setFormat(PixelFormat.RGBA_8888);
+                surfaceViewMutableLiveData.getValue().getHolder().addCallback(this);
+
+//               NativeCall.closeCamera();
+                NativeCall.openCamera();
             });
         }
 
     }
 
     public void stopCamera() {
-        mCameraProviderFuture = ProcessCameraProvider.getInstance(this);
-        try {
-            mCameraProviderFuture.get().unbindAll();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        NativeCall.closeCamera();
     }
 
-    private void bindPreview(@NonNull ProcessCameraProvider cameraProvider) {
-        Preview preview = new Preview.Builder().build();
-        CameraSelector cameraSelector = new CameraSelector.Builder()
-                .requireLensFacing(CameraSelector.LENS_FACING_BACK)
-                .build();
-//
-        preview.setSurfaceProvider(previewViewMutableLiveData.getValue().getSurfaceProvider());
-        //surfaceViewMutableLiveData
-        // Image Analysis
-        @SuppressLint("RestrictedApi") ImageAnalysis imageAnalysis =
-                new ImageAnalysis.Builder()
-                        .setTargetAspectRatio(AspectRatio.RATIO_16_9)
-                        .setDefaultResolution(new Size(1920, 1080))
-                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                        .build();
-        imageAnalysis.setAnalyzer(executor, image -> {
-            analyzeImage(image, image.getImageInfo().getRotationDegrees());
-
-        });
-
-        cameraProvider.bindToLifecycle(this, cameraSelector, imageAnalysis);
-    }
-
-    @SuppressLint("UnsafeExperimentalUsageError")
-    private  void analyzeImage(ImageProxy image, int rotationDegrees) {
-        // Convert Image to ByteArray
-        @SuppressLint("UnsafeOptInUsageError")
-        Bitmap bitmap = ImageHelper.ConvertImageToBitmap(Objects.requireNonNull(image.getImage()));
-        runOnUiThread(() -> imageViewMutableLiveData.getValue().setImageBitmap(NativeCall.Run(bitmap, threshold, nms_threshold)));
-
-        image.close();
-    }
 
     // Permission
     public void HandleCameraPermission()
@@ -134,4 +89,18 @@ public class CameraBackgroundActivity extends LandscapeDaggerAppCompatActivity {
         return true;
     }
 
+    @Override
+    public void surfaceCreated(@NonNull SurfaceHolder holder) {
+
+    }
+
+    @Override
+    public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {
+        NativeCall.setOutputWindow(holder.getSurface());
+    }
+
+    @Override
+    public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
+
+    }
 }

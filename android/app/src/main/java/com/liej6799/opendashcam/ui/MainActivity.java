@@ -4,7 +4,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.view.PreviewView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import android.graphics.PixelFormat;
 import android.os.Bundle;
+import android.view.SurfaceView;
 import android.widget.ImageView;
 
 import com.liej6799.opendashcam.R;
@@ -23,14 +25,8 @@ public class MainActivity extends CameraBackgroundActivity {
     @Inject
     CustomSharedPreferences customShaedPreferences;
 
-
-
-
-    @BindView(R.id.preview_view)
-    PreviewView mPreviewView;
-
-    @BindView(R.id.image_view)
-    ImageView mImageView;
+    @BindView(R.id.cameraview)
+    SurfaceView cameraview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,8 +43,7 @@ public class MainActivity extends CameraBackgroundActivity {
         }
 
 
-        previewViewMutableLiveData.setValue(mPreviewView);
-        imageViewMutableLiveData.setValue(mImageView);
+        surfaceViewMutableLiveData.setValue(cameraview);
         HandleCameraPermission();
     }
 }

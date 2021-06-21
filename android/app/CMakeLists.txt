@@ -14,11 +14,13 @@ find_package(OpenCV REQUIRED)
 # Native Code
 file(GLOB NATIVE_SOURCES
         "${CMAKE_CURRENT_LIST_DIR}/src/main/cpp/*.cpp"
-        "${CMAKE_CURRENT_LIST_DIR}/src/main/cpp/Ncnn/Model/*.cpp")
+        "${CMAKE_CURRENT_LIST_DIR}/src/main/cpp/Ncnn/Model/*.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/src/main/cpp/Common/Input/*.cpp")
 file(GLOB NATIVE_INCLUDE_DIRS
         "${CMAKE_CURRENT_LIST_DIR}/src/main/cpp/Common/"
         "${CMAKE_CURRENT_LIST_DIR}/src/main/cpp/Ncnn/Common/"
-        "${CMAKE_CURRENT_LIST_DIR}/src/main/cpp/Ncnn/Model/")
+        "${CMAKE_CURRENT_LIST_DIR}/src/main/cpp/Ncnn/Model/"
+        "${CMAKE_CURRENT_LIST_DIR}/src/main/cpp/Common/Input")
 
 add_library(${TARGET} SHARED
         ${NATIVE_SOURCES}
@@ -39,4 +41,6 @@ target_link_libraries(${TARGET}
         ncnn
         ${OpenCV_LIBS}
         ${FBJNI_LIBRARY}
-        log)
+        log
+        camera2ndk
+        mediandk)
